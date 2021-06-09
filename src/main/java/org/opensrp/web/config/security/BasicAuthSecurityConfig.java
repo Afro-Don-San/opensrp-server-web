@@ -19,6 +19,8 @@ import org.springframework.security.config.annotation.web.configurers.Expression
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.firewall.HttpFirewall;
+import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -97,7 +99,15 @@ public class BasicAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 		auth.authenticationProvider(opensrpAuthenticationProvider);
 	}
-	
+
+	@Bean
+	public HttpFirewall allowUrlEncodedDoubleSlash() {
+		StrictHttpFirewall firewall = new StrictHttpFirewall();
+		firewall.setAllowUrlEncodedDoubleSlash(true);
+		firewall.setAllowUrlEncodedSlash(true);
+		return firewall;
+	}
+
 	@Override
 	public void configure(WebSecurity web) throws Exception {
 		/* @formatter:off */
@@ -105,6 +115,8 @@ public class BasicAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 			.and().ignoring().mvcMatchers("/css/**")
 			.and().ignoring().mvcMatchers("/images/**");
 		/* @formatter:on */
+
+		web.httpFirewall(allowUrlEncodedDoubleSlash());
 	}
 	
 	@Bean
